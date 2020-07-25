@@ -10,12 +10,13 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 public class NIOServer implements Runnable {
+
     private ServerSocketChannel server;
     private Selector selector;
 
     public NIOServer() throws IOException {
         server = ServerSocketChannel.open();
-        server.socket().bind(new InetSocketAddress(8189));
+        server.socket().bind(new InetSocketAddress(8191));
         server.configureBlocking(false);
         selector = Selector.open();
         server.register(selector, SelectionKey.OP_ACCEPT);
@@ -39,25 +40,10 @@ public class NIOServer implements Runnable {
                         channel.write(ByteBuffer.wrap("Hello!".getBytes()));
                     }
                     if (key.isReadable()) {
-                        // TODO: 7/23/2020 fileStorage handle
-                        System.out.println("read key");
-                        ByteBuffer buffer = ByteBuffer.allocate(80);
-                        int count = ((SocketChannel)key.channel()).read(buffer);
-                        if (count == -1) {
-                            key.channel().close();
-                            break;
-                        }
-                        buffer.flip();
-                        StringBuilder s = new StringBuilder();
-                        while (buffer.hasRemaining()) {
-                            s.append((char)buffer.get());
-                        }
-                        for (SelectionKey key1 : selector.keys()) {
-                            if (key1.channel() instanceof SocketChannel && key1.isReadable()) {
-                                ((SocketChannel) key1.channel()).write(ByteBuffer.wrap(s.toString().getBytes()));
-                            }
-                        }
-                        System.out.println();
+                        new InputDataHandler(key, selector);
+                    }
+                    if (key.isWritable()) {
+                        new OutputDataHandler();
                     }
                 }
             }
