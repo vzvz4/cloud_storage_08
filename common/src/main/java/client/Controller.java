@@ -11,6 +11,8 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import static client.Commands.DIR;
+
 public class Controller implements Initializable {
 
   public ListView<String> lv;
@@ -19,7 +21,7 @@ public class Controller implements Initializable {
   private Socket socket;
   private DataInputStream is;
   private DataOutputStream os;
-  private ByteArrayInputStream byteInput;
+  private Callback listViewCB;
 
   private final String clientFilesPath = "./common/src/main/resources/clientFiles";
 
@@ -29,23 +31,19 @@ public class Controller implements Initializable {
       socket = new Socket("localhost", 8191);
       is = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
       os = new DataOutputStream(socket.getOutputStream());
-
+      initCallBacks();
+      new Thread(new InputDataHandler(is, os, listViewCB)).start();
+      os.write(DIR.getCmd().getBytes());
     } catch (IOException e) {
       e.printStackTrace();
     }
-    File dir = new File(clientFilesPath);
-    for (String file : dir.list()) {
-      lv.getItems().add(file);
-    }
-    new Thread(new InputDataReader(is)).start();
   }
 
-  // ./download fileName
-  // ./upload fileName
+  private void initCallBacks() {
+    listViewCB = (s -> lv.getItems().add(s));
+  }
+
   public void sendCommand(ActionEvent actionEvent) throws IOException {
-    String command = txt.getText();
-    String[] parsed = command.split("\\s");
-    if (parsed.length > 1)
-      os.write(command.getBytes());
+      os.write(txt.getText().getBytes());
   }
 }

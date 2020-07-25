@@ -26,10 +26,20 @@ public class FileUtility {
   public static void placeFile(InputStream is, File file) throws IOException {
     byte [] buffer = new byte[8192];
     try(FileOutputStream fos = new FileOutputStream(file)) {
-        for (long i = 0; i < buffer.length; i++) {
+        while (is.available() > 0) {
           int count = is.read(buffer);
           fos.write(buffer, 0, count);
         }
+    }
+  }
+
+  public static void placeFile(SelectableChannel ch, File file) throws IOException {
+    byte [] buffer = new byte[8192];
+    try(FileOutputStream fos = new FileOutputStream(file)) {
+      for (long i = 0; i < buffer.length; i++) {
+        int count = ((SocketChannel)ch).read(ByteBuffer.wrap(buffer));
+        fos.write(buffer, 0, count);
+      }
     }
   }
 
@@ -51,6 +61,18 @@ public class FileUtility {
         ((SocketChannel)ch).write(ByteBuffer.wrap(buffer));
       }
     }
+  }
+
+  public static List<File> showDirs(String currentDir) {
+    File dir = new File(currentDir);
+    return Arrays.asList(dir.listFiles());
+  }
+
+  public static String getFileName(String... cmd) {
+    return Arrays.stream(cmd)
+        .skip(1)
+        .reduce("", (x, y) -> x + " " + y)
+        .trim();
   }
 
 }

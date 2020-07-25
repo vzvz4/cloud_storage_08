@@ -1,5 +1,7 @@
 package NIO;
 
+import client.FileUtility;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -25,7 +27,7 @@ public class NIOServer implements Runnable {
     @Override
     public void run() {
         try {
-            System.out.println("server started");
+            System.out.println("-:server started:");
             while (server.isOpen()) {
                 selector.select();
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
@@ -33,8 +35,8 @@ public class NIOServer implements Runnable {
                     SelectionKey key = iterator.next();
                     iterator.remove();
                     if (key.isAcceptable()) {
-                        System.out.println("client accepted");
                         SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
+                        System.out.println(String.format("-:client accepted: [%s]", channel.getRemoteAddress()));
                         channel.configureBlocking(false);
                         channel.register(selector, SelectionKey.OP_READ);
                         channel.write(ByteBuffer.wrap("Hello!".getBytes()));
@@ -42,9 +44,10 @@ public class NIOServer implements Runnable {
                     if (key.isReadable()) {
                         new InputDataHandler(key, selector);
                     }
-                    if (key.isWritable()) {
-                        new OutputDataHandler();
-                    }
+//                    if (key.isWritable()) {
+//                        FileUtility.placeFile();
+//                        new InputDataHandler(key, selector);
+//                    }
                 }
             }
         } catch (Exception e) {
