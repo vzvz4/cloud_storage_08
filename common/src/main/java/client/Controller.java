@@ -1,5 +1,6 @@
 package client;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -40,10 +41,12 @@ public class Controller implements Initializable {
   }
 
   private void initCallBacks() {
-    listViewCB = (s -> lv.getItems().add(s));
+    listViewCB = (s -> Platform.runLater(() -> lv.getItems().add(s)));
   }
 
   public void sendCommand(ActionEvent actionEvent) throws IOException {
       os.write(txt.getText().getBytes());
+      if (txt.getText().equals(DIR.getCmd()))
+        lv.getItems().clear();
   }
 }
