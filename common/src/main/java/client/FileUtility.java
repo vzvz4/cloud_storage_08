@@ -1,6 +1,9 @@
-package org.owpk.util;
+package client;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,26 +23,7 @@ public class FileUtility {
     }
   }
 
-  public static List<File> showDirs(String currentDir) {
-    File dir = new File(ConfigReader.getDir() + "/" + currentDir);
-    return Arrays.asList(dir.listFiles());
-  }
-
-  public static void move(File dir, File file) throws IOException {
-    String path = dir.getAbsolutePath() + "/" + file.getName();
-    createFile(path);
-    InputStream is = new FileInputStream(file);
-    try (OutputStream os = new FileOutputStream(new File(path))) {
-      byte[] buffer = new byte[8192];
-      while (is.available() > 0) {
-        int readBytes = is.read(buffer);
-        System.out.println(readBytes);
-        os.write(buffer, 0, readBytes);
-      }
-    }
-  }
-
-  public static void placeFile(DataInputStream is, File file) throws IOException {
+  public static void placeFile(InputStream is, File file) throws IOException {
     byte [] buffer = new byte[8192];
     try(FileOutputStream fos = new FileOutputStream(file)) {
         for (long i = 0; i < buffer.length; i++) {
@@ -49,12 +33,22 @@ public class FileUtility {
     }
   }
 
-  public static void sendFile(DataOutputStream os, File file) throws IOException {
+  public static void sendFile(OutputStream os, File file) throws IOException {
     try(FileInputStream fis = new FileInputStream(file)) {
       byte[] buffer = new byte[8192];
       while (fis.available() > 0) {
         int count = fis.read(buffer);
         os.write(buffer, 0, count);
+      }
+    }
+  }
+
+  public static void sendFile(SelectableChannel ch, File file) throws IOException {
+    try(FileInputStream fis = new FileInputStream(file)) {
+      byte[] buffer = new byte[8192];
+      while (fis.available() > 0) {
+        fis.read(buffer);
+        ((SocketChannel)ch).write(ByteBuffer.wrap(buffer));
       }
     }
   }
