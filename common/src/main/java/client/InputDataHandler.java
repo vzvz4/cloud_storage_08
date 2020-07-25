@@ -52,7 +52,7 @@ public class InputDataHandler implements Runnable {
       else if (rowCmd[0].equals(UPLOAD.getCmd()))
         upload(cmd);
       else if (rowCmd[0].startsWith(DIR.getCmd()))
-        appendDirs(cmd);
+        appendServerDirs(cmd);
     }
   }
 
@@ -62,7 +62,7 @@ public class InputDataHandler implements Runnable {
     FileUtility.sendFile(os, new File(USER_FOLDER + fileName));
   }
 
-  private void appendDirs(String rowCmd) {
+  private void appendServerDirs(String rowCmd) {
     printLog(DIR, rowCmd);
     List<String> serverFiles;
     serverFiles = Arrays.stream(rowCmd.split(":"))
